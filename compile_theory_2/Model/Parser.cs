@@ -621,628 +621,66 @@ namespace compile_theory_2.Model
 
 		static private bool program()
 		{
-			List<SimpleProcess> temp = processes;
-			processes = new List<SimpleProcess>();
-			if(block())
-			{
-				temp.Add(new SimpleProcess(SymbolKind.program, SymbolKind.block));
-				temp.AddRange(processes);
-				processes = temp;
-				return true;
-			}
 			return false;
 		}
 
 		static private bool block()
 		{
-			List<SimpleProcess> temp = processes;
-			processes = new List<SimpleProcess>();
-			if (accapt(TokenKind.LBRA))
-			{
-				SaveToken();
-				if (!stmts())
-				{
-					recoverToken();
-					return false;
-				}
-				recoverPoint.Pop();
-
-				if (!accapt(TokenKind.RBRA))
-				{
-
-					AddError(SymbolKind.block, SymbolKind.LBRA);
-					return false;
-				}
-
-				temp.Add(new SimpleProcess(SymbolKind.block, SymbolKind.LBRA));
-				temp.AddRange(processes);
-				processes = temp;
-				//errores.Clear();
-				return true;
-			}
-			
-			AddError(SymbolKind.block, SymbolKind.LBRA);
 			return false;
 		}
 
 		static private bool stmts()
 		{
-			List<SimpleProcess> temp = processes;
-			processes = new List<SimpleProcess>();
-			SaveToken();
-			if (stmt())
-			{
-				recoverPoint.Pop();
-				SaveToken();
-				if (!stmts())
-				{
-					recoverToken();
-					return false;
-				}
-				recoverPoint.Pop();
-
-				temp.Add(new SimpleProcess(SymbolKind.stmts, SymbolKind.stmt));
-				temp.AddRange(processes);
-				processes = temp;
-				//errores.Clear();
-				return true;
-			}
-			recoverToken();
-
-			temp.Add(new SimpleProcess(SymbolKind.stmts, SymbolKind.NULL));
-			processes = temp;
-			//errores.Clear();
 			return true;
 		}
 
 		static private bool stmt()
 		{
-			List<SimpleProcess> temp = processes;
-			processes = new List<SimpleProcess>();
-			if (accapt(TokenKind.ID))
-			{
-				if (!accapt(TokenKind.EQU))
-				{
-					AddError(SymbolKind.stmt, SymbolKind.ID);
-					return false;
-				}
-
-				SaveToken();
-				if (!expr())
-				{
-					recoverToken();
-					return false;
-				}
-				recoverPoint.Pop();
-
-				if (!accapt(TokenKind.SEMI))
-				{
-					AddError(SymbolKind.stmt, SymbolKind.ID);
-					return false;
-				}
-
-				temp.Add(new SimpleProcess(SymbolKind.stmt, SymbolKind.ID));
-				temp.AddRange(processes);
-				processes = temp;
-				//errores.Clear();
-				return true;
-			}
-
-			processes.Clear();
-			if (accapt(TokenKind.IF))
-			{
-				if (!accapt(TokenKind.LPAR))
-				{
-					AddError(SymbolKind.stmt, SymbolKind.IF);
-					return false;
-				}
-
-				SaveToken();
-				if (!_bool())
-				{
-					recoverToken();
-					return false;
-				}
-				recoverPoint.Pop();
-
-				if (!accapt(TokenKind.RPAR))
-				{
-					AddError(SymbolKind.stmt, SymbolKind.IF);
-					return false;
-				}
-
-				SaveToken();
-				if (!stmt())
-				{
-					recoverToken();
-					return false;
-				}
-				recoverPoint.Pop();
-
-				SaveToken();
-				if (!stmt1())
-				{
-					recoverToken();
-					return false;
-				}
-				recoverPoint.Pop();
-
-				temp.Add(new SimpleProcess(SymbolKind.stmt, SymbolKind.IF));
-				temp.AddRange(processes);
-				processes = temp;
-				//errores.Clear();
-				return true;
-			}
-
-			processes.Clear();
-			if (accapt(TokenKind.WHILE))
-			{
-				if (!accapt(TokenKind.LPAR))
-				{
-					AddError(SymbolKind.stmt, SymbolKind.WHILE);
-					return false;
-				}
-
-				SaveToken();
-				if (!_bool())
-				{
-					recoverToken();
-					return false;
-				}
-				recoverPoint.Pop();
-
-				if (!accapt(TokenKind.RPAR))
-				{
-					AddError(SymbolKind.stmt, SymbolKind.WHILE);
-					return false;
-				}
-
-				SaveToken();
-				if (!stmt())
-				{
-					recoverToken();
-					return false;
-				}
-				recoverPoint.Pop();
-
-				temp.Add(new SimpleProcess(SymbolKind.stmt, SymbolKind.WHILE));
-				temp.AddRange(processes);
-				processes = temp;
-				//errores.Clear();
-				return true;
-			}
-
-			processes.Clear();
-			if (accapt(TokenKind.DO))
-			{
-				SaveToken();
-				if (!stmt())
-				{
-					recoverToken();
-					return false;
-				}
-				recoverPoint.Pop();
-
-				if (!accapt(TokenKind.WHILE))
-				{
-					AddError(SymbolKind.stmt, SymbolKind.DO);
-					return false;
-				}
-
-				if (!accapt(TokenKind.LPAR))
-				{
-					AddError(SymbolKind.stmt, SymbolKind.DO);
-					return false;
-				}
-
-				SaveToken();
-				if (!_bool())
-				{
-					recoverToken();
-					return false;
-				}
-				recoverPoint.Pop();
-
-				if (!accapt(TokenKind.RPAR))
-				{
-					AddError(SymbolKind.stmt, SymbolKind.DO);
-					return false;
-				}
-				temp.Add(new SimpleProcess(SymbolKind.stmt, SymbolKind.DO));
-				temp.AddRange(processes);
-				processes = temp;
-				//errores.Clear();
-				return true;
-			}
-
-			processes.Clear();
-			if (accapt(TokenKind.BREAK))
-			{
-				temp.Add(new SimpleProcess(SymbolKind.stmt, SymbolKind.BREAK));
-				processes = temp;
-				//errores.Clear();
-				return true;
-			}
-
-			SaveToken();
-			processes.Clear();
-			if (block())
-			{
-				recoverPoint.Pop();
-				temp.Add(new SimpleProcess(SymbolKind.stmt, SymbolKind.block));
-				temp.AddRange(processes);
-				processes = temp;
-				//errores.Clear();
-				return true;
-			}
-			recoverToken();
-
-			AddError(SymbolKind.stmt, SymbolKind.ALL);
 			return false;
 		}
 
 		static private bool stmt1()
 		{
-			List<SimpleProcess> temp = processes;
-			processes = new List<SimpleProcess>();
-			if (accapt(TokenKind.ELSE))
-			{
-				SaveToken();
-				if (!stmt())
-				{
-					recoverToken();
-					return false;
-				}
-				recoverPoint.Pop();
-
-				temp.Add(new SimpleProcess(SymbolKind.stmt1, SymbolKind.ELSE));
-				temp.AddRange(processes);
-				processes = temp;
-				//errores.Clear();
-				return true;
-			}
-			temp.Add(new SimpleProcess(SymbolKind.stmt1, SymbolKind.NULL));
-			processes = temp;
-			//errores.Clear();
 			return true;
 		}
 
 		static private bool _bool()
 		{
-			List<SimpleProcess> temp = processes;
-			processes = new List<SimpleProcess>();
-			SaveToken();
-			if (expr())
-			{
-				recoverPoint.Pop();
-				SaveToken();
-				if (!_bool1())
-				{
-					recoverToken();
-					return false;
-				}
-				recoverPoint.Pop();
-
-				temp.Add(new SimpleProcess(SymbolKind._bool, SymbolKind.expr));
-				temp.AddRange(processes);
-				processes = temp;
-				//errores.Clear();
-				return true;
-			}
-			recoverToken();
 			return false;
 		}
 
 		static private bool _bool1()
 		{
-			List<SimpleProcess> temp = processes;
-			processes = new List<SimpleProcess>();
-			if (accapt(TokenKind.LT))
-			{
-				SaveToken();
-				if (!_bool2())
-				{
-					recoverToken();
-					return false;
-				}
-				recoverPoint.Pop();
-
-				temp.Add(new SimpleProcess(SymbolKind._bool1, SymbolKind.LT));
-				temp.AddRange(processes);
-				processes = temp;
-				//errores.Clear();
-				return true;
-			}
-
-			processes.Clear();
-			if (accapt(TokenKind.GT))
-			{
-				SaveToken();
-				if (!_bool2())
-				{
-					recoverToken();
-					return false;
-				}
-				recoverPoint.Pop();
-
-				temp.Add(new SimpleProcess(SymbolKind._bool1, SymbolKind.GT));
-				temp.AddRange(processes);
-				processes = temp;
-				//errores.Clear();
-				return true;
-			}
-			temp.Add(new SimpleProcess(SymbolKind._bool1, SymbolKind.NULL));
-			processes = temp;
-			//errores.Clear();
 			return true;
 		}
 
 		static private bool _bool2()
 		{
-			List<SimpleProcess> temp = processes;
-			processes = new List<SimpleProcess>();
-
-			
-			if (accapt(TokenKind.EQU))
-			{
-				SaveToken();
-				if (!expr())
-				{
-					recoverToken();
-					return false;
-				}
-				recoverPoint.Pop();
-
-				temp.Add(new SimpleProcess(SymbolKind._bool2, SymbolKind.EQU));
-				temp.AddRange(processes);
-				processes = temp;
-				//errores.Clear();
-				return true;
-			}
-
-
-			SaveToken();
-			processes.Clear();
-			if (expr())
-			{
-				recoverPoint.Pop();
-				temp.Add(new SimpleProcess(SymbolKind._bool2, SymbolKind.expr));
-				temp.AddRange(processes);
-				processes = temp;
-				//errores.Clear();
-				return true;
-			}
-
-			recoverToken();
-			temp.Add(new SimpleProcess(SymbolKind.stmt, SymbolKind.DO));
-			temp.AddRange(processes);
-			processes = temp;
 			return false;
 		}
 
 		static private bool expr()
 		{
-			List<SimpleProcess> temp = processes;
-			processes = new List<SimpleProcess>();
-
-			SaveToken();
-			if (term())
-			{
-				recoverPoint.Pop();
-				SaveToken();
-				if (!expr1())
-				{
-					recoverToken();
-					return false;
-				}
-				recoverPoint.Pop();
-
-				temp.Add(new SimpleProcess(SymbolKind.expr, SymbolKind.term));
-				temp.AddRange(processes);
-				processes = temp;
-				//errores.Clear();
-				return true;
-			}
-			recoverToken();
 			return false;
 		}
 
 		static private bool expr1()
 		{
-			List<SimpleProcess> temp = processes;
-			processes = new List<SimpleProcess>();
-			if (accapt(TokenKind.ADD))
-			{
-				SaveToken();
-				if (!term())
-				{
-					recoverToken();
-					return false;
-				}
-				recoverPoint.Pop();
-
-				SaveToken();
-				if (!expr1())
-				{
-					recoverToken();
-					return false;
-				}
-				recoverPoint.Pop();
-
-				temp.Add(new SimpleProcess(SymbolKind.expr1, SymbolKind.ADD));
-				temp.AddRange(processes);
-				processes = temp;
-				//errores.Clear();
-				return true;
-			}
-
-			processes.Clear();
-			if (accapt(TokenKind.SUB))
-			{
-				SaveToken();
-				if (!term())
-				{
-					recoverToken();
-					return false;
-				}
-				recoverPoint.Pop();
-
-				SaveToken();
-				if (!expr1())
-				{
-					recoverToken();
-					return false;
-				}
-				recoverPoint.Pop();
-
-				temp.Add(new SimpleProcess(SymbolKind.expr1, SymbolKind.SUB));
-				temp.AddRange(processes);
-				processes = temp;
-				//errores.Clear();
-				return true;
-			}
-			temp.Add(new SimpleProcess(SymbolKind.expr1, SymbolKind.NULL));
-			processes = temp;
-			//errores.Clear();
 			return true;
 		}
 
 		static private bool term()
 		{
-			List<SimpleProcess> temp = processes;
-			processes = new List<SimpleProcess>();
-
-			SaveToken();
-			if (factor())
-			{
-				recoverPoint.Pop();
-				SaveToken();
-				if (!term1())
-				{
-					recoverToken();
-					return false;
-				}
-				recoverPoint.Pop();
-
-				temp.Add(new SimpleProcess(SymbolKind.term, SymbolKind.factor));
-				temp.AddRange(processes);
-				processes = temp;
-				//errores.Clear();
-				return true;
-			}
-			recoverToken();
-
 			return false;
 		}
 
 		static private bool term1()
 		{
-			List<SimpleProcess> temp = processes;
-			processes = new List<SimpleProcess>();
-			if (accapt(TokenKind.MULT))
-			{
-				SaveToken();
-				if (!factor())
-				{
-					recoverToken();
-					return false;
-				}
-				recoverPoint.Pop();
-
-				SaveToken();
-				if (!term1())
-				{
-					recoverToken();
-					return false;
-				}
-				recoverPoint.Pop();
-
-				temp.Add(new SimpleProcess(SymbolKind.term1, SymbolKind.MULT));
-				temp.AddRange(processes);
-				processes = temp;
-				//errores.Clear();
-				return true;
-			}
-
-			processes.Clear();
-			if (accapt(TokenKind.DIV))
-			{
-				SaveToken();
-				if (!factor())
-				{
-					recoverToken();
-					return false;
-				}
-				recoverPoint.Pop();
-
-				SaveToken();
-				if (!term1())
-				{
-					recoverToken();
-					return false;
-				}
-				recoverPoint.Pop();
-
-				temp.Add(new SimpleProcess(SymbolKind.term1, SymbolKind.DIV));
-				temp.AddRange(processes);
-				processes = temp;
-				//errores.Clear();
-				return true;
-			}
-			temp.Add(new SimpleProcess(SymbolKind.term1, SymbolKind.NULL));
-			processes = temp;
-			//errores.Clear();
 			return true;
 		}
 
 		static private bool factor()
 		{
-			List<SimpleProcess> temp = processes;
-			processes = new List<SimpleProcess>();
-			if (accapt(TokenKind.LPAR))
-			{
-				SaveToken();
-				if (!expr())
-				{
-					recoverToken();
-					return false;
-				}
-				recoverPoint.Pop();
-
-				if (!accapt(TokenKind.RPAR))
-				{
-					AddError(SymbolKind.factor, SymbolKind.LPAR);
-					return false;
-				}
-
-				temp.Add(new SimpleProcess(SymbolKind.factor, SymbolKind.LPAR));
-				temp.AddRange(processes);
-				processes = temp;
-				//errores.Clear();
-				return true;
-			}
-
-			processes.Clear();
-			if (accapt(TokenKind.ID))
-			{
-				temp.Add(new SimpleProcess(SymbolKind.factor, SymbolKind.ID));
-				temp.AddRange(processes);
-				processes = temp;
-				//errores.Clear();
-				return true;
-			}
-
-			processes.Clear();
-			if (accapt(TokenKind.NUM))
-			{
-				temp.Add(new SimpleProcess(SymbolKind.factor, SymbolKind.NUM));
-				temp.AddRange(processes);
-				processes = temp;
-				//errores.Clear();
-				return true;
-			}
-
-			AddError(SymbolKind.factor, SymbolKind.ALL);
 			return false;
 		}
 	}
