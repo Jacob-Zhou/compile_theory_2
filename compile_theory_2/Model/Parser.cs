@@ -83,7 +83,7 @@ namespace compile_theory_2.Model
 		static private List<SimpleError> errores = new List<SimpleError>();
 
 		static private bool accapt(TokenKind tokenKind)
-		{
+		{//token may null
 			if (token == null)
 			{
 				return false;
@@ -95,6 +95,7 @@ namespace compile_theory_2.Model
 					token = Lexer.LexNext();
 					if (token == null)
 					{
+						token = new Token(0, "", TokenKind.ERROR);
 						break;
 					}
 				} while (token.kind == TokenKind.ANNO);
@@ -395,7 +396,6 @@ namespace compile_theory_2.Model
 			else
 			{
 				StateViewModel.Display("失败");
-				ErrorHandle();
 			}
 			SourceViewModel.UnkeepOnlyRead();
 		}
@@ -590,33 +590,20 @@ namespace compile_theory_2.Model
 			}
 		}
 
-		static private void AddError(SymbolKind from, SymbolKind to)
-		{
-			if (token != null)
-			{
-				errores.Add(new SimpleError(
-					SourceViewModel.GetLine(token.offset),
-					new SimpleProcess(from, to)));
-			}
-			else
-			{
-				errores.Add(new SimpleError(
-					SourceViewModel.GetLineCount(),
-					new SimpleProcess(from, to)));
-			}
-		}
-
-		static private void ErrorHandle()
+		static private void AddError(SymbolKind from, SymbolKind to, string Information)
 		{
 			Error err;
-			foreach (var e in errores)
+			err = new Error();
+			if(token != null)
 			{
-				err = new Error();
-				err.line = e.line;
-				err.value = GetProduction(e.errorProcess);
-				err.infomation = "出现某些语法错误";
-				ErrorViewModel.getInstance().addError(err);
+				err.line = SourceViewModel.GetLine(token.offset);
+				err.lineOffset = SourceViewModel.GetLineOffset(token.offset);
+				err.length = token.value.Length;
+				err.isVisable = true;
 			}
+			err.value = GetProduction(new SimpleProcess(from, to));
+			err.information = Information;
+			ErrorViewModel.getInstance().addError(err);
 		}
 
 		static private bool program()
@@ -633,16 +620,18 @@ namespace compile_theory_2.Model
 		{
 			if (!accapt(TokenKind.LBRA))
 			{
+				AddError(SymbolKind.block, SymbolKind.LBRA, "缺少预期符号 {");
 				return false;
 			}
 
-			if (!stmt())
+			if (!stmts())
 			{
 				return false;
 			}
 
 			if (!accapt(TokenKind.RBRA))
 			{
+				AddError(SymbolKind.block, SymbolKind.LBRA, "缺少预期符号 }");
 				return false;
 			}
 
@@ -651,6 +640,11 @@ namespace compile_theory_2.Model
 
 		static private bool stmts()
 		{
+			if(token == null)
+			{
+				AddError(SymbolKind.NULL, SymbolKind.NULL, "异常的结尾");
+				return false;
+			}
 			switch (token.kind)
 			{
 				case TokenKind.ID:
@@ -678,17 +672,23 @@ namespace compile_theory_2.Model
 
 		static private bool stmt()
 		{
-
+			if (token == null)
+			{
+				AddError(SymbolKind.NULL, SymbolKind.NULL, "异常的结尾");
+				return false;
+			}
 			switch (token.kind)
 			{
 				case TokenKind.ID:
 					if (!accapt(TokenKind.ID))
 					{
+						AddError(SymbolKind.stmt, SymbolKind.ID, "内部错误");
 						return false;
 					}
 
 					if (!accapt(TokenKind.EQU))
 					{
+						AddError(SymbolKind.stmt, SymbolKind.ID, "缺少预期符号 =");
 						return false;
 					}
 
@@ -697,15 +697,22 @@ namespace compile_theory_2.Model
 						return false;
 					}
 
+					if (!accapt(TokenKind.SEMI))
+					{
+						AddError(SymbolKind.stmt, SymbolKind.ID, "缺少预期符号 ;");
+						return false;
+					}
 					return true;
 				case TokenKind.IF:
 					if (!accapt(TokenKind.IF))
 					{
+						AddError(SymbolKind.stmt, SymbolKind.IF, "内部错误");
 						return false;
 					}
 
 					if (!accapt(TokenKind.LPAR))
 					{
+						AddError(SymbolKind.stmt, SymbolKind.IF, "缺少预期符号 (");
 						return false;
 					}
 
@@ -716,6 +723,7 @@ namespace compile_theory_2.Model
 
 					if (!accapt(TokenKind.RPAR))
 					{
+						AddError(SymbolKind.stmt, SymbolKind.IF, "缺少预期符号 )");
 						return false;
 					}
 
@@ -733,11 +741,13 @@ namespace compile_theory_2.Model
 				case TokenKind.WHILE:
 					if (!accapt(TokenKind.WHILE))
 					{
+						AddError(SymbolKind.stmt, SymbolKind.WHILE, "内部错误");
 						return false;
 					}
 
 					if (!accapt(TokenKind.LPAR))
 					{
+						AddError(SymbolKind.stmt, SymbolKind.WHILE, "缺少预期符号 (");
 						return false;
 					}
 
@@ -748,6 +758,7 @@ namespace compile_theory_2.Model
 
 					if (!accapt(TokenKind.RPAR))
 					{
+						AddError(SymbolKind.stmt, SymbolKind.WHILE, "缺少预期符号 )");
 						return false;
 					}
 
@@ -760,6 +771,7 @@ namespace compile_theory_2.Model
 				case TokenKind.DO:
 					if (!accapt(TokenKind.DO))
 					{
+						AddError(SymbolKind.stmt, SymbolKind.DO, "内部错误");
 						return false;
 					}
 
@@ -770,11 +782,13 @@ namespace compile_theory_2.Model
 
 					if (!accapt(TokenKind.WHILE))
 					{
+						AddError(SymbolKind.stmt, SymbolKind.DO, "缺少关键字 while");
 						return false;
 					}
 
 					if (!accapt(TokenKind.LPAR))
 					{
+						AddError(SymbolKind.stmt, SymbolKind.DO, "缺少预期符号 (");
 						return false;
 					}
 
@@ -785,6 +799,7 @@ namespace compile_theory_2.Model
 
 					if (!accapt(TokenKind.RPAR))
 					{
+						AddError(SymbolKind.stmt, SymbolKind.DO, "缺少预期符号 )");
 						return false;
 					}
 
@@ -792,6 +807,7 @@ namespace compile_theory_2.Model
 				case TokenKind.BREAK:
 					if (!accapt(TokenKind.BREAK))
 					{
+						AddError(SymbolKind.stmt, SymbolKind.BREAK, "内部错误");
 						return false;
 					}
 					return true;
@@ -804,6 +820,7 @@ namespace compile_theory_2.Model
 					return true;
 
 				default:
+					AddError(SymbolKind.stmt, SymbolKind.ALL, "找不到合法的后续符号");
 					return false;
 			}
 		}
@@ -814,6 +831,7 @@ namespace compile_theory_2.Model
 			{
 				if (!accapt(TokenKind.ELSE))
 				{
+					AddError(SymbolKind.stmt1, SymbolKind.ELSE, "内部错误");
 					return false;
 				}
 
@@ -838,7 +856,8 @@ namespace compile_theory_2.Model
 			{
 				return false;
 			}
-			return false;
+
+			return true;
 		}
 
 		static private bool _bool1()
@@ -848,6 +867,7 @@ namespace compile_theory_2.Model
 				case TokenKind.LT:
 					if (!accapt(TokenKind.LT))
 					{
+						AddError(SymbolKind._bool1, SymbolKind.LT, "内部错误");
 						return false;
 					}
 
@@ -859,6 +879,7 @@ namespace compile_theory_2.Model
 				case TokenKind.GT:
 					if (!accapt(TokenKind.GT))
 					{
+						AddError(SymbolKind._bool1, SymbolKind.GT, "内部错误");
 						return false;
 					}
 
@@ -887,6 +908,7 @@ namespace compile_theory_2.Model
 				case TokenKind.EQU:
 					if (!accapt(TokenKind.EQU))
 					{
+						AddError(SymbolKind._bool2, SymbolKind.EQU, "内部错误");
 						return false;
 					}
 					
@@ -896,6 +918,7 @@ namespace compile_theory_2.Model
 					}
 					return true;
 				default:
+					AddError(SymbolKind._bool2, SymbolKind.ALL, "找不到合法的后续符号");
 					return false;
 			}
 		}
@@ -921,6 +944,7 @@ namespace compile_theory_2.Model
 				case TokenKind.ADD:
 					if (!accapt(TokenKind.ADD))
 					{
+						AddError(SymbolKind.expr1, SymbolKind.ADD, "内部错误");
 						return false;
 					}
 
@@ -938,6 +962,7 @@ namespace compile_theory_2.Model
 				case TokenKind.SUB:
 					if (!accapt(TokenKind.SUB))
 					{
+						AddError(SymbolKind.expr1, SymbolKind.SUB, "内部错误");
 						return false;
 					}
 
@@ -979,6 +1004,7 @@ namespace compile_theory_2.Model
 				case TokenKind.MULT:
 					if (!accapt(TokenKind.MULT))
 					{
+						AddError(SymbolKind.term1, SymbolKind.MULT, "内部错误");
 						return false;
 					}
 
@@ -996,6 +1022,7 @@ namespace compile_theory_2.Model
 				case TokenKind.DIV:
 					if (!accapt(TokenKind.DIV))
 					{
+						AddError(SymbolKind.term1, SymbolKind.DIV, "内部错误");
 						return false;
 					}
 
@@ -1022,6 +1049,7 @@ namespace compile_theory_2.Model
 				case TokenKind.LPAR:
 					if (!accapt(TokenKind.LPAR))
 					{
+						AddError(SymbolKind.factor, SymbolKind.LPAR, "内部错误");
 						return false;
 					}
 
@@ -1032,24 +1060,26 @@ namespace compile_theory_2.Model
 
 					if (!accapt(TokenKind.RPAR))
 					{
+						AddError(SymbolKind.factor, SymbolKind.LPAR, "缺少预期符号 )");
 						return false;
 					}
 					return true;
 				case TokenKind.ID:
 					if (!accapt(TokenKind.ID))
 					{
+						AddError(SymbolKind.factor, SymbolKind.ID, "内部错误");
 						return false;
 					}
-
 					return true;
 				case TokenKind.NUM:
 					if (!accapt(TokenKind.NUM))
 					{
+						AddError(SymbolKind.factor, SymbolKind.NUM, "内部错误");
 						return false;
 					}
-
 					return true;
 				default:
+					AddError(SymbolKind._bool2, SymbolKind.ALL, "找不到合法的后续符号");
 					return false;
 			}
 		}

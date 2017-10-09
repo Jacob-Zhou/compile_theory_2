@@ -387,19 +387,19 @@ namespace compile_theory_2.Model
 			switch (ekind)
 			{
 				case ErrorKind.ANNONOTCLOSED:
-					e.infomation = "注释未闭合";
+					e.information = "注释未闭合";
 					break;
 				case ErrorKind.NUMBERERROR:
-					e.infomation = string.Format("数字 {0} 格式错误", eValue);
+					e.information = string.Format("数字 {0} 格式错误", eValue);
 					break;
 				case ErrorKind.INVALIDCHAR:
-					e.infomation = string.Format("无法识别的字符: {0}", eValue);
+					e.information = string.Format("无法识别的字符: {0}", eValue);
 					break;
 				case ErrorKind.NESTBRA:
-					e.infomation = "出现嵌套的注释";
+					e.information = "出现嵌套的注释";
 					break;
 				default:
-					e.infomation = string.Format("未知类型错误: {0}", eValue);
+					e.information = string.Format("未知类型错误: {0}", eValue);
 					break;
 			}
 		}

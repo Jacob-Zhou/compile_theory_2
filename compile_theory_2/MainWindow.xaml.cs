@@ -72,9 +72,16 @@ namespace compile_theory_2
 			var item = ((sender as DataGrid).SelectedItem as Error);
 			if (item != null)
 			{
-				textEditor.Select(textEditor.Document.GetOffset(item.line, 0), textEditor.Document.TextLength - textEditor.Document.GetOffset(item.line, 0));
-				textEditor.TextArea.SelectionBrush = Brushes.Red;
-				textEditor.ScrollTo(item.line, item.lineOffset);
+				if (item.isVisable)
+				{
+					textEditor.Select(textEditor.Document.GetOffset(item.line, item.lineOffset), item.length);
+					textEditor.TextArea.SelectionBrush = Brushes.Red;
+					textEditor.ScrollTo(item.line, item.lineOffset);
+				}
+				else
+				{
+					textEditor.Select(0, 0);
+				}
 			}
 		}
 

@@ -55,7 +55,7 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="列" Binding="{Binding line}" IsReadOnly="True" FontSize="14" Width="1*"/>
                 <DataGridTextColumn Header="产生式"  Binding="{Binding value}" IsReadOnly="True" FontSize="14" Width="3*"/>
-                <DataGridTextColumn Header="说明"  Binding="{Binding infomation}" IsReadOnly="True" FontSize="14" Width="5*"/>
+                <DataGridTextColumn Header="说明"  Binding="{Binding information}" IsReadOnly="True" FontSize="14" Width="5*"/>
             </DataGrid.Columns>
         </DataGrid>
         <Menu x:Name="menu" Grid.Column="1" Margin="4" Grid.Row="1">
