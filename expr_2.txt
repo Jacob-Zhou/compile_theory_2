@@ -1,0 +1,45 @@
+$program -> $block	<- {
+
+$block -> { $stmts }
+
+$stmts -> $stmt $stmts	<- ID IF WHILE DO BREAK {
+      |  NULL
+
+$stmt -> ID = $expr ;
+      |  IF ( $bool ) $stmt $stmt1
+      |  WHILE ( $bool ) $stmt
+      |  DO $stmt WHILE ( $bool )
+      |  BREAK
+      |  $block		<- {
+
+$stmt1 -> ELSE $stmt
+       |  NULL
+
+$bool -> $expr $bool1
+
+$bool1 -> < $bool2
+       |  > $bool2
+       |  NULL
+
+$bool2 -> $expr		<- ( ID NUM
+       |  = $expr
+ 
+$expr -> $term $expr1
+
+$expr1 -> + $term $expr1
+       |  - $term $expr1
+       |  NULL
+
+$term -> $factor $term1
+
+$term1 -> * $factor $term1
+       |  / $factor $term1
+       |  NULL
+
+$factor -> ( $expr )
+        |  ID
+        |  NUM
+
+TokenKind: IF, WHILE, DO, BREAK, ID, NUM, {, }, (, ), <, >, =, *, /, +, -, ;
+ID: <_[_a-zA-Z0-9]*>
+NUM: <[0-9]+(.[0-9]+)?>
