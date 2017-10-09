@@ -362,7 +362,7 @@ namespace compile_theory_2.Model
 
 		static private void SaveToken()
 		{
-			if(token != null)
+			if (token != null)
 			{
 				recoverPoint.Push(token.offset);
 			}
@@ -405,37 +405,37 @@ namespace compile_theory_2.Model
 			switch (s)
 			{
 				case SymbolKind._bool:
-					return  "bool ";
+					return "bool ";
 				case SymbolKind._bool1:
-					return  "bool1 ";
+					return "bool1 ";
 				case SymbolKind._bool2:
-					return  "bool2 ";
+					return "bool2 ";
 				case SymbolKind.GT:
-					return  "> ";
+					return "> ";
 				case SymbolKind.ADD:
-					return  "+ ";
+					return "+ ";
 				case SymbolKind.SUB:
-					return  "- ";
+					return "- ";
 				case SymbolKind.MULT:
-					return  "* ";
+					return "* ";
 				case SymbolKind.DIV:
-					return  "/ ";
+					return "/ ";
 				case SymbolKind.EQU:
-					return  "= ";
+					return "= ";
 				case SymbolKind.LT:
-					return  "< ";
+					return "< ";
 				case SymbolKind.LBRA:
-					return  "{ ";
+					return "{ ";
 				case SymbolKind.RBRA:
-					return  "} ";
+					return "} ";
 				case SymbolKind.SEMI:
-					return  "; ";
+					return "; ";
 				case SymbolKind.LPAR:
-					return  "( ";
+					return "( ";
 				case SymbolKind.RPAR:
-					return  ") ";
+					return ") ";
 				default:
-					return  s.ToString() + " ";
+					return s.ToString() + " ";
 
 			}
 		}
@@ -563,7 +563,7 @@ namespace compile_theory_2.Model
 							default:
 								return null;
 						}
-						
+
 					case SymbolKind.factor:
 						switch (errorProcess.to)
 						{
@@ -592,7 +592,7 @@ namespace compile_theory_2.Model
 
 		static private void AddError(SymbolKind from, SymbolKind to)
 		{
-			if(token!= null)
+			if (token != null)
 			{
 				errores.Add(new SimpleError(
 					SourceViewModel.GetLine(token.offset),
@@ -621,67 +621,437 @@ namespace compile_theory_2.Model
 
 		static private bool program()
 		{
-			return false;
+			if (!block())
+			{
+				return false;
+			}
+
+			return true;
 		}
 
 		static private bool block()
 		{
-			return false;
+			if (!accapt(TokenKind.LBRA))
+			{
+				return false;
+			}
+
+			if (!stmt())
+			{
+				return false;
+			}
+
+			if (!accapt(TokenKind.RBRA))
+			{
+				return false;
+			}
+
+			return true;
 		}
 
 		static private bool stmts()
 		{
-			return true;
+			switch (token.kind)
+			{
+				case TokenKind.ID:
+				case TokenKind.IF:
+				case TokenKind.WHILE:
+				case TokenKind.DO:
+				case TokenKind.BREAK:
+				case TokenKind.LBRA:
+					if (!stmt())
+					{
+						return false;
+					}
+
+					if (!stmts())
+					{
+						return false;
+					}
+
+					return true;
+
+				default:
+					return true;
+			}
 		}
 
 		static private bool stmt()
 		{
-			return false;
+
+			switch (token.kind)
+			{
+				case TokenKind.ID:
+					if (!accapt(TokenKind.ID))
+					{
+						return false;
+					}
+
+					if (!accapt(TokenKind.EQU))
+					{
+						return false;
+					}
+
+					if (!expr())
+					{
+						return false;
+					}
+
+					return true;
+				case TokenKind.IF:
+					if (!accapt(TokenKind.IF))
+					{
+						return false;
+					}
+
+					if (!accapt(TokenKind.LPAR))
+					{
+						return false;
+					}
+
+					if (!_bool())
+					{
+						return false;
+					}
+
+					if (!accapt(TokenKind.RPAR))
+					{
+						return false;
+					}
+
+					if (!stmt())
+					{
+						return false;
+					}
+
+					if (!stmt1())
+					{
+						return false;
+					}
+
+					return true;
+				case TokenKind.WHILE:
+					if (!accapt(TokenKind.WHILE))
+					{
+						return false;
+					}
+
+					if (!accapt(TokenKind.LPAR))
+					{
+						return false;
+					}
+
+					if (!_bool())
+					{
+						return false;
+					}
+
+					if (!accapt(TokenKind.RPAR))
+					{
+						return false;
+					}
+
+					if (!stmt())
+					{
+						return false;
+					}
+
+					return true;
+				case TokenKind.DO:
+					if (!accapt(TokenKind.DO))
+					{
+						return false;
+					}
+
+					if (!stmt())
+					{
+						return false;
+					}
+
+					if (!accapt(TokenKind.WHILE))
+					{
+						return false;
+					}
+
+					if (!accapt(TokenKind.LPAR))
+					{
+						return false;
+					}
+
+					if (!_bool())
+					{
+						return false;
+					}
+
+					if (!accapt(TokenKind.RPAR))
+					{
+						return false;
+					}
+
+					return true;
+				case TokenKind.BREAK:
+					if (!accapt(TokenKind.BREAK))
+					{
+						return false;
+					}
+					return true;
+
+				case TokenKind.LBRA:
+					if (!block())
+					{
+						return false;
+					}
+					return true;
+
+				default:
+					return false;
+			}
 		}
 
 		static private bool stmt1()
 		{
+			if(token.kind == TokenKind.ELSE)
+			{
+				if (!accapt(TokenKind.ELSE))
+				{
+					return false;
+				}
+
+				if (!stmt())
+				{
+					return false;
+				}
+
+				return true;
+			}
 			return true;
 		}
 
 		static private bool _bool()
 		{
+			if (!expr())
+			{
+				return false;
+			}
+
+			if (!_bool1())
+			{
+				return false;
+			}
 			return false;
 		}
 
 		static private bool _bool1()
 		{
-			return true;
+			switch (token.kind)
+			{
+				case TokenKind.LT:
+					if (!accapt(TokenKind.LT))
+					{
+						return false;
+					}
+
+					if (!_bool2())
+					{
+						return false;
+					}
+					return true;
+				case TokenKind.GT:
+					if (!accapt(TokenKind.GT))
+					{
+						return false;
+					}
+
+					if (!_bool2())
+					{
+						return false;
+					}
+					return true;
+				default:
+					return true;
+			}
 		}
 
 		static private bool _bool2()
 		{
-			return false;
+			switch (token.kind)
+			{
+				case TokenKind.LPAR:
+				case TokenKind.ID:
+				case TokenKind.NUM:
+					if (!expr())
+					{
+						return false;
+					}
+					return true;
+				case TokenKind.EQU:
+					if (!accapt(TokenKind.EQU))
+					{
+						return false;
+					}
+					
+					if (!expr())
+					{
+						return false;
+					}
+					return true;
+				default:
+					return false;
+			}
 		}
 
 		static private bool expr()
 		{
-			return false;
+			if (!term())
+			{
+				return false;
+			}
+
+			if (!expr1())
+			{
+				return false;
+			}
+			return true;
 		}
 
 		static private bool expr1()
 		{
-			return true;
+			switch (token.kind)
+			{
+				case TokenKind.ADD:
+					if (!accapt(TokenKind.ADD))
+					{
+						return false;
+					}
+
+					if (!term())
+					{
+						return false;
+					}
+
+					if (!expr1())
+					{
+						return false;
+					}
+
+					return true;
+				case TokenKind.SUB:
+					if (!accapt(TokenKind.SUB))
+					{
+						return false;
+					}
+
+					if (!term())
+					{
+						return false;
+					}
+
+					if (!expr1())
+					{
+						return false;
+					}
+
+					return true;
+				default:
+					return true;
+			}
 		}
 
 		static private bool term()
 		{
-			return false;
+			if (!factor())
+			{
+				return false;
+			}
+
+			if (!term1())
+			{
+				return false;
+			}
+
+			return true;
 		}
 
 		static private bool term1()
 		{
-			return true;
+			switch (token.kind)
+			{
+				case TokenKind.MULT:
+					if (!accapt(TokenKind.MULT))
+					{
+						return false;
+					}
+
+					if (!factor())
+					{
+						return false;
+					}
+
+					if (!term1())
+					{
+						return false;
+					}
+
+					return true;
+				case TokenKind.DIV:
+					if (!accapt(TokenKind.DIV))
+					{
+						return false;
+					}
+
+					if (!factor())
+					{
+						return false;
+					}
+
+					if (!term1())
+					{
+						return false;
+					}
+
+					return true;
+				default:
+					return true;
+			}
 		}
 
 		static private bool factor()
 		{
-			return false;
+			switch (token.kind)
+			{
+				case TokenKind.LPAR:
+					if (!accapt(TokenKind.LPAR))
+					{
+						return false;
+					}
+
+					if (!expr())
+					{
+						return false;
+					}
+
+					if (!accapt(TokenKind.RPAR))
+					{
+						return false;
+					}
+					return true;
+				case TokenKind.ID:
+					if (!accapt(TokenKind.ID))
+					{
+						return false;
+					}
+
+					return true;
+				case TokenKind.NUM:
+					if (!accapt(TokenKind.NUM))
+					{
+						return false;
+					}
+
+					return true;
+				default:
+					return false;
+			}
 		}
 	}
 }
