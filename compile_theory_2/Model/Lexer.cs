@@ -415,6 +415,53 @@ namespace compile_theory_2.Model
 			SourceViewModel.SetOffset(offset - 1);
 		}
 
+		static public void Highlighting()
+		{
+			var t = LexNext();
+			while (t != null)
+			{
+				switch (t.kind)
+				{
+					case TokenKind.ADD:
+					case TokenKind.SUB:
+					case TokenKind.MULT:
+					case TokenKind.DIV:
+					case TokenKind.EQU:
+					case TokenKind.GT:
+					case TokenKind.LT:
+						SourceViewModel.Colorize(t.offset, t.value.Length, HLKind.OPERATOR);
+						break;
+					case TokenKind.SEMI:
+					case TokenKind.LBRA:
+					case TokenKind.RBRA:
+					case TokenKind.LPAR:
+					case TokenKind.RPAR:
+						SourceViewModel.Colorize(t.offset, t.value.Length, HLKind.PUNCT);
+						break;
+					case TokenKind.BREAK:
+					case TokenKind.DO:
+					case TokenKind.ELSE:
+					case TokenKind.IF:
+					case TokenKind.WHILE:
+						SourceViewModel.Colorize(t.offset, t.value.Length, HLKind.KEYWORD);
+						break;
+					case TokenKind.ID:
+						SourceViewModel.Colorize(t.offset, t.value.Length, HLKind.ID);
+						break;
+					case TokenKind.NUM:
+						SourceViewModel.Colorize(t.offset, t.value.Length, HLKind.NUM);
+						break;
+					case TokenKind.ANNO:
+						SourceViewModel.Colorize(t.offset, t.value.Length, HLKind.ANNO);
+						break;
+					case TokenKind.ERROR:
+						SourceViewModel.Colorize(t.offset, t.value.Length, HLKind.ERROR);
+						break;
+				}
+				t = LexNext();
+			}
+		}
+
 		static public void Test()
 		{
 			ProcessViewModel.Clear();

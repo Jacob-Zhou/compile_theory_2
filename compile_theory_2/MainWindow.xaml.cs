@@ -55,6 +55,7 @@ namespace compile_theory_2
 		private void button_Click(object sender, RoutedEventArgs e)
 		{
 			//Lexer.Test();
+			//Lexer.Highlighting();
 			Parser.parse();
 		}
 
