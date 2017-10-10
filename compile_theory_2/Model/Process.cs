@@ -10,12 +10,16 @@ namespace compile_theory_2.Model
 {
 	class Detail
 	{
-		public Detail(string production)
+		public Detail(string production, int offset = 0, int length = 0)
 		{
 			this.production = production;
+			this.offset = offset;
+			this.length = length;
 		}
 
 		public string production { get; set; }
+		public int offset { get; set; }
+		public int length { get; set; }
 	}
 
 	class Process : INotifyPropertyChanged
@@ -55,6 +59,13 @@ namespace compile_theory_2.Model
 				Detail = value;
 				OnPropertyChanged(new PropertyChangedEventArgs("detail"));
 			}
+		}
+
+		public void SetOffsetAddLength(int offset, int length)
+		{
+			detail[0].offset = offset;
+			detail[0].length = length;
+			OnPropertyChanged(new PropertyChangedEventArgs("detail"));
 		}
 
 		public event PropertyChangedEventHandler PropertyChanged;

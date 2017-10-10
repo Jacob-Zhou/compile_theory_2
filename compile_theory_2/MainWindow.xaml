@@ -28,7 +28,7 @@
             <ColumnDefinition Width="337*"/>
             <ColumnDefinition Width="33*"/>
         </Grid.ColumnDefinitions>
-        <TreeView x:Name="treeView" Grid.Column="3" Grid.Row="1" Grid.RowSpan="4" Margin="4" BorderThickness="2" MouseRightButtonUp="treeView_MouseRightButtonUp" FontSize="14">
+        <TreeView x:Name="treeView" Grid.Column="3" Grid.Row="1" Grid.RowSpan="4" Margin="4" BorderThickness="2" MouseRightButtonUp="treeView_MouseRightButtonUp" FontSize="14" SelectedItemChanged="treeView_SelectedItemChanged" >
             <TreeView.ItemContainerStyle>
                 <Style TargetType="{x:Type TreeViewItem}">
                     <Setter Property="IsExpanded" Value="{Binding Path=isExpanded, Mode=TwoWay}" />

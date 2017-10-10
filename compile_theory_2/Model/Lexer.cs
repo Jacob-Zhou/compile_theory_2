@@ -29,7 +29,8 @@ namespace compile_theory_2.Model
 		LPAR,
 		RPAR,
 		ANNO,
-		ERROR
+		ERROR,
+		EOF
 	};
 
 	enum ErrorKind

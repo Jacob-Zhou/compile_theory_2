@@ -105,6 +105,11 @@ namespace compile_theory_2.ViewModel
 			return document.LineCount;
 		}
 
+		public static int GetEndOffset()
+		{
+			return document.TextLength - 1;
+		}
+
 		public static void SetOffset(int noffset)
 		{
 			offset = noffset;

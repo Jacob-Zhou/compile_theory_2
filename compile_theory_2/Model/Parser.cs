@@ -55,6 +55,8 @@ namespace compile_theory_2.Model
 
 		public SymbolKind from { get; set; }
 		public SymbolKind to { get; set; }
+		public int offset { get; set; }
+		public int length { get; set; }
 	}
 
 	class SimpleError
@@ -78,6 +80,7 @@ namespace compile_theory_2.Model
 	{
 		static private Stack<int> recoverPoint = new Stack<int>();
 		static private Token token;
+		static private Token OldToken;
 		static private LinkedList<SymbolKind> result = new LinkedList<SymbolKind>();
 		static private List<SimpleProcess> processes = new List<SimpleProcess>();
 		static private List<SimpleError> errores = new List<SimpleError>();
@@ -90,12 +93,13 @@ namespace compile_theory_2.Model
 			}
 			if (tokenKind == token.kind)
 			{
+				OldToken = token;
 				do
 				{
 					token = Lexer.LexNext();
 					if (token == null)
 					{
-						token = new Token(0, "", TokenKind.ERROR);
+						token = new Token(SourceViewModel.GetEndOffset(), "", TokenKind.EOF);
 						break;
 					}
 				} while (token.kind == TokenKind.ANNO);
@@ -345,7 +349,9 @@ namespace compile_theory_2.Model
 					{
 						resultStr += SymbolKindToString(s);
 					}
-					ProcessViewModel.Add(new Process(resultStr, production));
+					Process process = new Process(resultStr, production);
+					process.SetOffsetAddLength(p.offset, p.length);
+					ProcessViewModel.Add(process);
 				}
 			}
 		}
@@ -383,6 +389,7 @@ namespace compile_theory_2.Model
 			processes.Clear();
 			Lexer.Reset();
 			token = Lexer.LexNext();
+			OldToken = token;
 			if (token == null)
 			{
 				SourceViewModel.UnkeepOnlyRead();
@@ -594,7 +601,7 @@ namespace compile_theory_2.Model
 		{
 			Error err;
 			err = new Error();
-			if(token != null)
+			if (token != null)
 			{
 				err.line = SourceViewModel.GetLine(token.offset);
 				err.lineOffset = SourceViewModel.GetLineOffset(token.offset);
@@ -610,17 +617,23 @@ namespace compile_theory_2.Model
 		{
 
 			processes.Add(new SimpleProcess(SymbolKind.program, SymbolKind.block));
+			int pIndex = processes.Count - 1;
+			processes[pIndex].offset = token.offset;
 
 			if (!block())
 			{
 				return false;
 			}
+
+			processes[pIndex].length = OldToken.offset - processes[pIndex].offset + OldToken.value.Length;
 			return true;
 		}
 
 		static private bool block()
 		{
 			processes.Add(new SimpleProcess(SymbolKind.block, SymbolKind.LBRA));
+			int pIndex = processes.Count - 1;
+			processes[pIndex].offset = token.offset;
 
 			if (!accapt(TokenKind.LBRA))
 			{
@@ -639,16 +652,18 @@ namespace compile_theory_2.Model
 				return false;
 			}
 
+			processes[pIndex].length = OldToken.offset - processes[pIndex].offset + OldToken.value.Length;
 			return true;
 		}
 
 		static private bool stmts()
 		{
-			if(token == null)
+			if (token == null)
 			{
 				AddError(SymbolKind.NULL, SymbolKind.NULL, "异常的结尾");
 				return false;
 			}
+			int pIndex;
 			switch (token.kind)
 			{
 				case TokenKind.ID:
@@ -658,6 +673,9 @@ namespace compile_theory_2.Model
 				case TokenKind.BREAK:
 				case TokenKind.LBRA:
 					processes.Add(new SimpleProcess(SymbolKind.stmts, SymbolKind.stmt));
+					pIndex = processes.Count - 1;
+					processes[pIndex].offset = token.offset;
+
 					if (!stmt())
 					{
 						return false;
@@ -667,10 +685,14 @@ namespace compile_theory_2.Model
 					{
 						return false;
 					}
+					processes[pIndex].length = OldToken.offset - processes[pIndex].offset + OldToken.value.Length;
 					return true;
 
 				default:
 					processes.Add(new SimpleProcess(SymbolKind.stmts, SymbolKind.NULL));
+					pIndex = processes.Count - 1;
+					processes[pIndex].offset = token.offset;
+					processes[pIndex].length = 0;
 					return true;
 			}
 		}
@@ -682,10 +704,13 @@ namespace compile_theory_2.Model
 				AddError(SymbolKind.NULL, SymbolKind.NULL, "异常的结尾");
 				return false;
 			}
+			int pIndex;
 			switch (token.kind)
 			{
 				case TokenKind.ID:
 					processes.Add(new SimpleProcess(SymbolKind.stmt, SymbolKind.ID));
+					pIndex = processes.Count - 1;
+					processes[pIndex].offset = token.offset;
 
 					if (!accapt(TokenKind.ID))
 					{
@@ -710,10 +735,13 @@ namespace compile_theory_2.Model
 						return false;
 					}
 
+					processes[pIndex].length = OldToken.offset - processes[pIndex].offset + OldToken.value.Length;
 					return true;
 
 				case TokenKind.IF:
 					processes.Add(new SimpleProcess(SymbolKind.stmt, SymbolKind.IF));
+					pIndex = processes.Count - 1;
+					processes[pIndex].offset = token.offset;
 
 					if (!accapt(TokenKind.IF))
 					{
@@ -747,11 +775,14 @@ namespace compile_theory_2.Model
 					{
 						return false;
 					}
-					
+
+					processes[pIndex].length = OldToken.offset - processes[pIndex].offset + OldToken.value.Length;
 					return true;
 
 				case TokenKind.WHILE:
 					processes.Add(new SimpleProcess(SymbolKind.stmt, SymbolKind.WHILE));
+					pIndex = processes.Count - 1;
+					processes[pIndex].offset = token.offset;
 
 					if (!accapt(TokenKind.WHILE))
 					{
@@ -780,12 +811,14 @@ namespace compile_theory_2.Model
 					{
 						return false;
 					}
-					
+
+					processes[pIndex].length = OldToken.offset - processes[pIndex].offset + OldToken.value.Length;
 					return true;
 
 				case TokenKind.DO:
 					processes.Add(new SimpleProcess(SymbolKind.stmt, SymbolKind.DO));
-
+					pIndex = processes.Count - 1;
+					processes[pIndex].offset = token.offset;
 					if (!accapt(TokenKind.DO))
 					{
 						AddError(SymbolKind.stmt, SymbolKind.DO, "内部错误");
@@ -820,10 +853,13 @@ namespace compile_theory_2.Model
 						return false;
 					}
 
+					processes[pIndex].length = OldToken.offset - processes[pIndex].offset + OldToken.value.Length;
 					return true;
 
 				case TokenKind.BREAK:
 					processes.Add(new SimpleProcess(SymbolKind.stmt, SymbolKind.BREAK));
+					pIndex = processes.Count - 1;
+					processes[pIndex].offset = token.offset;
 
 					if (!accapt(TokenKind.BREAK))
 					{
@@ -831,16 +867,20 @@ namespace compile_theory_2.Model
 						return false;
 					}
 
+					processes[pIndex].length = OldToken.offset - processes[pIndex].offset + OldToken.value.Length;
 					return true;
 
 				case TokenKind.LBRA:
 
 					processes.Add(new SimpleProcess(SymbolKind.stmt, SymbolKind.block));
+					pIndex = processes.Count - 1;
+					processes[pIndex].offset = token.offset;
 					if (!block())
 					{
 						return false;
 					}
 
+					processes[pIndex].length = OldToken.offset - processes[pIndex].offset + OldToken.value.Length;
 					return true;
 
 				default:
@@ -851,10 +891,12 @@ namespace compile_theory_2.Model
 
 		static private bool stmt1()
 		{
-			if(token.kind == TokenKind.ELSE)
+			int pIndex;
+			if (token.kind == TokenKind.ELSE)
 			{
 				processes.Add(new SimpleProcess(SymbolKind.stmt1, SymbolKind.ELSE));
-
+				pIndex = processes.Count - 1;
+				processes[pIndex].offset = token.offset;
 				if (!accapt(TokenKind.ELSE))
 				{
 					AddError(SymbolKind.stmt1, SymbolKind.ELSE, "内部错误");
@@ -866,17 +908,22 @@ namespace compile_theory_2.Model
 					return false;
 				}
 
+				processes[pIndex].length = OldToken.offset - processes[pIndex].offset + OldToken.value.Length;
 				return true;
 			}
 
 			processes.Add(new SimpleProcess(SymbolKind.stmt1, SymbolKind.NULL));
+			pIndex = processes.Count - 1;
+			processes[pIndex].offset = token.offset;
+			processes[pIndex].length = 0;
 			return true;
 		}
 
 		static private bool _bool()
 		{
 			processes.Add(new SimpleProcess(SymbolKind._bool, SymbolKind.expr));
-
+			int pIndex = processes.Count - 1;
+			processes[pIndex].offset = token.offset;
 			if (!expr())
 			{
 				return false;
@@ -887,16 +934,19 @@ namespace compile_theory_2.Model
 				return false;
 			}
 
+			processes[pIndex].length = OldToken.offset - processes[pIndex].offset + OldToken.value.Length;
 			return true;
 		}
 
 		static private bool _bool1()
 		{
+			int pIndex;
 			switch (token.kind)
 			{
 				case TokenKind.LT:
 					processes.Add(new SimpleProcess(SymbolKind._bool1, SymbolKind.LT));
-
+					pIndex = processes.Count - 1;
+					processes[pIndex].offset = token.offset;
 					if (!accapt(TokenKind.LT))
 					{
 						AddError(SymbolKind._bool1, SymbolKind.LT, "内部错误");
@@ -908,11 +958,13 @@ namespace compile_theory_2.Model
 						return false;
 					}
 
+					processes[pIndex].length = OldToken.offset - processes[pIndex].offset + OldToken.value.Length;
 					return true;
 
 				case TokenKind.GT:
 					processes.Add(new SimpleProcess(SymbolKind._bool1, SymbolKind.GT));
-
+					pIndex = processes.Count - 1;
+					processes[pIndex].offset = token.offset;
 					if (!accapt(TokenKind.GT))
 					{
 						AddError(SymbolKind._bool1, SymbolKind.GT, "内部错误");
@@ -924,45 +976,55 @@ namespace compile_theory_2.Model
 						return false;
 					}
 
+					processes[pIndex].length = OldToken.offset - processes[pIndex].offset + OldToken.value.Length;
 					return true;
 
 				default:
 
 					processes.Add(new SimpleProcess(SymbolKind._bool1, SymbolKind.NULL));
+					pIndex = processes.Count - 1;
+					processes[pIndex].offset = token.offset;
+					processes[pIndex].length = 0;
 					return true;
 			}
 		}
 
 		static private bool _bool2()
 		{
+			int pIndex;
 			switch (token.kind)
 			{
 				case TokenKind.LPAR:
 				case TokenKind.ID:
 				case TokenKind.NUM:
 					processes.Add(new SimpleProcess(SymbolKind._bool2, SymbolKind.expr));
-
+					pIndex = processes.Count - 1;
+					processes[pIndex].offset = token.offset;
 					if (!expr())
 					{
 						return false;
 					}
 
+					processes[pIndex].length = OldToken.offset - processes[pIndex].offset + OldToken.value.Length;
 					return true;
 
 				case TokenKind.EQU:
 					processes.Add(new SimpleProcess(SymbolKind._bool2, SymbolKind.EQU));
+					pIndex = processes.Count - 1;
+					processes[pIndex].offset = token.offset;
 
 					if (!accapt(TokenKind.EQU))
 					{
 						AddError(SymbolKind._bool2, SymbolKind.EQU, "内部错误");
 						return false;
 					}
-					
+
 					if (!expr())
 					{
 						return false;
 					}
 
+					processes[pIndex].length = OldToken.offset - processes[pIndex].offset + OldToken.value.Length;
 					return true;
 
 				default:
@@ -974,7 +1036,8 @@ namespace compile_theory_2.Model
 		static private bool expr()
 		{
 			processes.Add(new SimpleProcess(SymbolKind.expr, SymbolKind.term));
-
+			int pIndex = processes.Count - 1;
+			processes[pIndex].offset = token.offset;
 			if (!term())
 			{
 				return false;
@@ -985,16 +1048,19 @@ namespace compile_theory_2.Model
 				return false;
 			}
 
+			processes[pIndex].length = OldToken.offset - processes[pIndex].offset + OldToken.value.Length;
 			return true;
 		}
 
 		static private bool expr1()
 		{
+			int pIndex;
 			switch (token.kind)
 			{
 				case TokenKind.ADD:
 					processes.Add(new SimpleProcess(SymbolKind.expr1, SymbolKind.ADD));
-
+					pIndex = processes.Count - 1;
+					processes[pIndex].offset = token.offset;
 					if (!accapt(TokenKind.ADD))
 					{
 						AddError(SymbolKind.expr1, SymbolKind.ADD, "内部错误");
@@ -1011,10 +1077,12 @@ namespace compile_theory_2.Model
 						return false;
 					}
 
+					processes[pIndex].length = OldToken.offset - processes[pIndex].offset + OldToken.value.Length;
 					return true;
 				case TokenKind.SUB:
 					processes.Add(new SimpleProcess(SymbolKind.expr1, SymbolKind.SUB));
-
+					pIndex = processes.Count - 1;
+					processes[pIndex].offset = token.offset;
 					if (!accapt(TokenKind.SUB))
 					{
 						AddError(SymbolKind.expr1, SymbolKind.SUB, "内部错误");
@@ -1031,9 +1099,13 @@ namespace compile_theory_2.Model
 						return false;
 					}
 
+					processes[pIndex].length = OldToken.offset - processes[pIndex].offset + OldToken.value.Length;
 					return true;
 				default:
 					processes.Add(new SimpleProcess(SymbolKind.expr1, SymbolKind.NULL));
+					pIndex = processes.Count - 1;
+					processes[pIndex].offset = token.offset;
+					processes[pIndex].length = 0;
 					return true;
 			}
 		}
@@ -1041,7 +1113,8 @@ namespace compile_theory_2.Model
 		static private bool term()
 		{
 			processes.Add(new SimpleProcess(SymbolKind.term, SymbolKind.factor));
-
+			int pIndex = processes.Count - 1;
+			processes[pIndex].offset = token.offset;
 			if (!factor())
 			{
 				return false;
@@ -1052,16 +1125,19 @@ namespace compile_theory_2.Model
 				return false;
 			}
 
+			processes[pIndex].length = OldToken.offset - processes[pIndex].offset + OldToken.value.Length;
 			return true;
 		}
 
 		static private bool term1()
 		{
+			int pIndex;
 			switch (token.kind)
 			{
 				case TokenKind.MULT:
 					processes.Add(new SimpleProcess(SymbolKind.term1, SymbolKind.MULT));
-
+					pIndex = processes.Count - 1;
+					processes[pIndex].offset = token.offset;
 					if (!accapt(TokenKind.MULT))
 					{
 						AddError(SymbolKind.term1, SymbolKind.MULT, "内部错误");
@@ -1078,10 +1154,12 @@ namespace compile_theory_2.Model
 						return false;
 					}
 
+					processes[pIndex].length = OldToken.offset - processes[pIndex].offset + OldToken.value.Length;
 					return true;
 				case TokenKind.DIV:
 					processes.Add(new SimpleProcess(SymbolKind.term1, SymbolKind.DIV));
-
+					pIndex = processes.Count - 1;
+					processes[pIndex].offset = token.offset;
 					if (!accapt(TokenKind.DIV))
 					{
 						AddError(SymbolKind.term1, SymbolKind.DIV, "内部错误");
@@ -1098,20 +1176,26 @@ namespace compile_theory_2.Model
 						return false;
 					}
 
+					processes[pIndex].length = OldToken.offset - processes[pIndex].offset + OldToken.value.Length;
 					return true;
 				default:
 					processes.Add(new SimpleProcess(SymbolKind.term1, SymbolKind.NULL));
+					pIndex = processes.Count - 1;
+					processes[pIndex].offset = token.offset;
+					processes[pIndex].length = 0;
 					return true;
 			}
 		}
 
 		static private bool factor()
 		{
+			int pIndex;
 			switch (token.kind)
 			{
 				case TokenKind.LPAR:
 					processes.Add(new SimpleProcess(SymbolKind.factor, SymbolKind.LPAR));
-
+					pIndex = processes.Count - 1;
+					processes[pIndex].offset = token.offset;
 					if (!accapt(TokenKind.LPAR))
 					{
 						AddError(SymbolKind.factor, SymbolKind.LPAR, "内部错误");
@@ -1129,29 +1213,34 @@ namespace compile_theory_2.Model
 						return false;
 					}
 
+					processes[pIndex].length = OldToken.offset - processes[pIndex].offset + OldToken.value.Length;
 					return true;
 				case TokenKind.ID:
 					processes.Add(new SimpleProcess(SymbolKind.factor, SymbolKind.ID));
-
+					pIndex = processes.Count - 1;
+					processes[pIndex].offset = token.offset;
 					if (!accapt(TokenKind.ID))
 					{
 						AddError(SymbolKind.factor, SymbolKind.ID, "内部错误");
 						return false;
 					}
 
+					processes[pIndex].length = OldToken.offset - processes[pIndex].offset + OldToken.value.Length;
 					return true;
 				case TokenKind.NUM:
-					processes.Add(new SimpleProcess(SymbolKind.factor, SymbolKind.ID));
-
+					processes.Add(new SimpleProcess(SymbolKind.factor, SymbolKind.NUM));
+					pIndex = processes.Count - 1;
+					processes[pIndex].offset = token.offset;
 					if (!accapt(TokenKind.NUM))
 					{
 						AddError(SymbolKind.factor, SymbolKind.NUM, "内部错误");
 						return false;
 					}
 
+					processes[pIndex].length = OldToken.offset - processes[pIndex].offset + OldToken.value.Length;
 					return true;
 				default:
-					AddError(SymbolKind._bool2, SymbolKind.ALL, "找不到合法的后续符号");
+					AddError(SymbolKind.factor, SymbolKind.ALL, "找不到合法的后续符号");
 					return false;
 			}
 		}

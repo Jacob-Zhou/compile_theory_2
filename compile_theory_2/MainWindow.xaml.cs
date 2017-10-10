@@ -110,5 +110,13 @@ namespace compile_theory_2
 				textEditor.Save(sfd.FileName);
 			}
 		}
+
+		private void treeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+		{
+			if(e.NewValue is Detail)
+			{
+				textEditor.Select(((Detail)e.NewValue).offset, ((Detail)e.NewValue).length);
+			}
+		}
 	}
 }
