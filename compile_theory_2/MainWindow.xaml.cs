@@ -1,5 +1,6 @@
 ﻿using compile_theory_2.Model;
 using compile_theory_2.ViewModel;
+using ICSharpCode.AvalonEdit.Editing;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -119,5 +120,6 @@ namespace compile_theory_2
 				textEditor.Select(((Detail)e.NewValue).offset, ((Detail)e.NewValue).length);
 			}
 		}
+		
 	}
 }

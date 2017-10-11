@@ -625,6 +625,12 @@ namespace compile_theory_2.Model
 				return false;
 			}
 
+			if (!accapt(TokenKind.EOF))
+			{
+				AddError(SymbolKind.program, SymbolKind.block, "多余的符号串");
+				return false;
+			}
+
 			processes[pIndex].length = OldToken.offset - processes[pIndex].offset + OldToken.value.Length;
 			return true;
 		}
