@@ -15,12 +15,14 @@ namespace compile_theory_2.Model
 		DO,
 		BREAK,
 		GT,
+		GEQU,
 		ADD,
 		SUB,
 		MULT,
 		DIV,
 		EQU,
 		LT,
+		LEQU,
 		LBRA,
 		RBRA,
 		SEMI,
@@ -91,13 +93,7 @@ namespace compile_theory_2.Model
 							{
 								break;
 							}
-
-							if (c == '>')
-							{
-								value = c.ToString();
-								return new Token(startOffset, value, TokenKind.GT);
-							}
-
+							
 							if (c == '+')
 							{
 								value = c.ToString();
@@ -132,7 +128,31 @@ namespace compile_theory_2.Model
 							if (c == '<')
 							{
 								value = c.ToString();
-								return new Token(startOffset, value, TokenKind.LT);
+								var f = SourceViewModel.Forward();
+								if(f.HasValue && f.Value == '=')
+								{
+									SourceViewModel.NextChar();
+									return new Token(startOffset, value + '=', TokenKind.LEQU);
+								}
+								else
+								{
+									return new Token(startOffset, value, TokenKind.LT);
+								}
+							}
+							
+							if (c == '>')
+							{
+								value = c.ToString();
+								var f = SourceViewModel.Forward();
+								if (f.HasValue && f.Value == '=')
+								{
+									SourceViewModel.NextChar();
+									return new Token(startOffset, value + '=', TokenKind.GEQU);
+								}
+								else
+								{
+									return new Token(startOffset, value, TokenKind.GT);
+								}
 							}
 
 							if (c == '{')

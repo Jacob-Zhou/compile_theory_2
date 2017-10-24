@@ -16,7 +16,7 @@ namespace compile_theory_2.Model
 		stmt1,
 		_bool,
 		_bool1,
-		_bool2,
+		//_bool2,
 		expr,
 		expr1,
 		term,
@@ -28,12 +28,14 @@ namespace compile_theory_2.Model
 		DO,
 		BREAK,
 		GT,
+		GEQU,
 		ADD,
 		SUB,
 		MULT,
 		DIV,
 		EQU,
 		LT,
+		LEQU,
 		LBRA,
 		RBRA,
 		SEMI,
@@ -245,15 +247,27 @@ namespace compile_theory_2.Model
 							{
 								case SymbolKind.LT:
 									addNode = result.AddAfter(addNode, p.to);
-									addNode = result.AddAfter(addNode, SymbolKind._bool2);
+									addNode = result.AddAfter(addNode, SymbolKind.expr);
 									result.Remove(replaceNode);
-									production = "bool1 -> < bool2";
+									production = "bool1 -> < expr";
 									break;
 								case SymbolKind.GT:
 									addNode = result.AddAfter(addNode, p.to);
-									result.AddAfter(addNode, SymbolKind._bool2);
+									result.AddAfter(addNode, SymbolKind.expr);
 									result.Remove(replaceNode);
-									production = "bool1 -> > bool2";
+									production = "bool1 -> > expr";
+									break;
+								case SymbolKind.LEQU:
+									addNode = result.AddAfter(addNode, p.to);
+									result.AddAfter(addNode, SymbolKind.expr);
+									result.Remove(replaceNode);
+									production = "bool1 -> <= expr";
+									break;
+								case SymbolKind.GEQU:
+									addNode = result.AddAfter(addNode, p.to);
+									result.AddAfter(addNode, SymbolKind.expr);
+									result.Remove(replaceNode);
+									production = "bool1 -> >= expr";
 									break;
 								case SymbolKind.NULL:
 									result.Remove(replaceNode);
@@ -261,22 +275,22 @@ namespace compile_theory_2.Model
 									break;
 							}
 							break;
-						case SymbolKind._bool2:
-							switch (p.to)
-							{
-								case SymbolKind.expr:
-									result.AddAfter(addNode, SymbolKind.expr);
-									result.Remove(replaceNode);
-									production = "bool2 -> expr";
-									break;
-								case SymbolKind.EQU:
-									addNode = result.AddAfter(addNode, SymbolKind.EQU);
-									result.AddAfter(addNode, SymbolKind.expr);
-									result.Remove(replaceNode);
-									production = "bool2 -> = expr";
-									break;
-							}
-							break;
+						//case SymbolKind._bool2:
+						//	switch (p.to)
+						//	{
+						//		case SymbolKind.expr:
+						//			result.AddAfter(addNode, SymbolKind.expr);
+						//			result.Remove(replaceNode);
+						//			production = "bool2 -> expr";
+						//			break;
+						//		case SymbolKind.EQU:
+						//			addNode = result.AddAfter(addNode, SymbolKind.EQU);
+						//			result.AddAfter(addNode, SymbolKind.expr);
+						//			result.Remove(replaceNode);
+						//			production = "bool2 -> = expr";
+						//			break;
+						//	}
+						//	break;
 						case SymbolKind.expr:
 							addNode = result.AddAfter(addNode, SymbolKind.term);
 							result.AddAfter(addNode, SymbolKind.expr1);
@@ -429,8 +443,8 @@ namespace compile_theory_2.Model
 					return "bool ";
 				case SymbolKind._bool1:
 					return "bool1 ";
-				case SymbolKind._bool2:
-					return "bool2 ";
+				//case SymbolKind._bool2:
+				//	return "bool2 ";
 				case SymbolKind.GT:
 					return "> ";
 				case SymbolKind.ADD:
@@ -526,10 +540,16 @@ namespace compile_theory_2.Model
 						switch (errorProcess.to)
 						{
 							case SymbolKind.LT:
-								return "bool1 -> < bool2";
+								return "bool1 -> < expr";
 
 							case SymbolKind.GT:
-								return "bool1 -> > bool2";
+								return "bool1 -> > expr";
+
+							case SymbolKind.LEQU:
+								return "bool1 -> <= expr";
+
+							case SymbolKind.GEQU:
+								return "bool1 -> >= expr";
 
 							case SymbolKind.NULL:
 								return "bool1 -> NULL";
@@ -537,17 +557,17 @@ namespace compile_theory_2.Model
 								return null;
 						}
 
-					case SymbolKind._bool2:
-						switch (errorProcess.to)
-						{
-							case SymbolKind.expr:
-								return "bool2 -> expr";
+					//case SymbolKind._bool2:
+					//	switch (errorProcess.to)
+					//	{
+					//		case SymbolKind.expr:
+					//			return "bool2 -> expr";
 
-							case SymbolKind.EQU:
-								return "bool2 -> = expr";
-							default:
-								return null;
-						}
+					//		case SymbolKind.EQU:
+					//			return "bool2 -> = expr";
+					//		default:
+					//			return null;
+					//	}
 
 					case SymbolKind.expr:
 						return "expr -> term expr1";
@@ -973,7 +993,7 @@ namespace compile_theory_2.Model
 						return false;
 					}
 
-					if (!_bool2())
+					if (!expr())
 					{
 						return false;
 					}
@@ -991,7 +1011,43 @@ namespace compile_theory_2.Model
 						return false;
 					}
 
-					if (!_bool2())
+					if (!expr())
+					{
+						return false;
+					}
+
+					processes[pIndex].length = OldToken.offset - processes[pIndex].offset + OldToken.value.Length;
+					return true;
+
+				case TokenKind.LEQU:
+					processes.Add(new SimpleProcess(SymbolKind._bool1, SymbolKind.LEQU));
+					pIndex = processes.Count - 1;
+					processes[pIndex].offset = token.offset;
+					if (!accapt(TokenKind.LEQU))
+					{
+						AddError(SymbolKind._bool1, SymbolKind.LEQU, "内部错误");
+						return false;
+					}
+
+					if (!expr())
+					{
+						return false;
+					}
+
+					processes[pIndex].length = OldToken.offset - processes[pIndex].offset + OldToken.value.Length;
+					return true;
+
+				case TokenKind.GEQU:
+					processes.Add(new SimpleProcess(SymbolKind._bool1, SymbolKind.GEQU));
+					pIndex = processes.Count - 1;
+					processes[pIndex].offset = token.offset;
+					if (!accapt(TokenKind.GEQU))
+					{
+						AddError(SymbolKind._bool1, SymbolKind.GEQU, "内部错误");
+						return false;
+					}
+
+					if (!expr())
 					{
 						return false;
 					}
@@ -1009,49 +1065,49 @@ namespace compile_theory_2.Model
 			}
 		}
 
-		static private bool _bool2()
-		{
-			int pIndex;
-			switch (token.kind)
-			{
-				case TokenKind.LPAR:
-				case TokenKind.ID:
-				case TokenKind.NUM:
-					processes.Add(new SimpleProcess(SymbolKind._bool2, SymbolKind.expr));
-					pIndex = processes.Count - 1;
-					processes[pIndex].offset = token.offset;
-					if (!expr())
-					{
-						return false;
-					}
+		//static private bool _bool2()
+		//{
+		//	int pIndex;
+		//	switch (token.kind)
+		//	{
+		//		case TokenKind.LPAR:
+		//		case TokenKind.ID:
+		//		case TokenKind.NUM:
+		//			processes.Add(new SimpleProcess(SymbolKind._bool2, SymbolKind.expr));
+		//			pIndex = processes.Count - 1;
+		//			processes[pIndex].offset = token.offset;
+		//			if (!expr())
+		//			{
+		//				return false;
+		//			}
 
-					processes[pIndex].length = OldToken.offset - processes[pIndex].offset + OldToken.value.Length;
-					return true;
+		//			processes[pIndex].length = OldToken.offset - processes[pIndex].offset + OldToken.value.Length;
+		//			return true;
 
-				case TokenKind.EQU:
-					processes.Add(new SimpleProcess(SymbolKind._bool2, SymbolKind.EQU));
-					pIndex = processes.Count - 1;
-					processes[pIndex].offset = token.offset;
+		//		case TokenKind.EQU:
+		//			processes.Add(new SimpleProcess(SymbolKind._bool2, SymbolKind.EQU));
+		//			pIndex = processes.Count - 1;
+		//			processes[pIndex].offset = token.offset;
 
-					if (!accapt(TokenKind.EQU))
-					{
-						AddError(SymbolKind._bool2, SymbolKind.EQU, "内部错误");
-						return false;
-					}
+		//			if (!accapt(TokenKind.EQU))
+		//			{
+		//				AddError(SymbolKind._bool2, SymbolKind.EQU, "内部错误");
+		//				return false;
+		//			}
 
-					if (!expr())
-					{
-						return false;
-					}
+		//			if (!expr())
+		//			{
+		//				return false;
+		//			}
 
-					processes[pIndex].length = OldToken.offset - processes[pIndex].offset + OldToken.value.Length;
-					return true;
+		//			processes[pIndex].length = OldToken.offset - processes[pIndex].offset + OldToken.value.Length;
+		//			return true;
 
-				default:
-					AddError(SymbolKind._bool2, SymbolKind.ALL, "找不到合法的后续符号");
-					return false;
-			}
-		}
+		//		default:
+		//			AddError(SymbolKind._bool2, SymbolKind.ALL, "找不到合法的后续符号");
+		//			return false;
+		//	}
+		//}
 
 		static private bool expr()
 		{

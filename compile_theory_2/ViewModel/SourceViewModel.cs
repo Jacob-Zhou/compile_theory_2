@@ -224,6 +224,18 @@ namespace compile_theory_2.ViewModel
 			}
 		}
 
+		public static char? Forward()
+		{
+			if (offset + 1 < document.TextLength)
+			{
+				return document.GetCharAt(offset + 1);
+			}
+			else
+			{
+				return null;
+			}
+		}
+
 		public static char? NextChar()
 		{
 			if(offset + 1 < document.TextLength)
