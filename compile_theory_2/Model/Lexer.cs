@@ -449,6 +449,8 @@ namespace compile_theory_2.Model
 					case TokenKind.EQU:
 					case TokenKind.GT:
 					case TokenKind.LT:
+					case TokenKind.LEQU:
+					case TokenKind.GEQU:
 						SourceViewModel.Colorize(t.offset, t.value.Length, HLKind.OPERATOR);
 						break;
 					case TokenKind.SEMI:
