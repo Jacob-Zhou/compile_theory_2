@@ -102,7 +102,21 @@ namespace compile_theory_2.Model
 						token = new Token(SourceViewModel.GetEndOffset() + 1, "", TokenKind.EOF);
 						break;
 					}
-				} while (token.kind == TokenKind.ANNO);
+					if(token.kind == TokenKind.ERROR)
+					{
+						Error err;
+						err = new Error();
+						if (token != null)
+						{
+							err.line = SourceViewModel.GetLine(token.offset);
+							err.lineOffset = SourceViewModel.GetLineOffset(token.offset);
+							err.length = token.value.Length;
+							err.isVisable = true;
+						}
+						err.information = string.Format("意外的字符 {0}", token.value);
+						ErrorViewModel.getInstance().addError(err);
+					}
+				} while (token.kind == TokenKind.ANNO || token.kind == TokenKind.ERROR);
 				return true;
 			}
 			else
