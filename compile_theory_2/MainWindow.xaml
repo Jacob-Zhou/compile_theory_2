@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:compile_theory_2"
         xmlns:command="clr-namespace:compile_theory_2.Commands"
         mc:Ignorable="d"
-        Title="MainWindow" Height="768" Width="1024">
+        Title="递归下降分析器" Height="768" Width="1024">
     <Window.CommandBindings>
         <CommandBinding x:Name="SaveCommands" Command="command:SaveCommands.Requery" Executed="SaveCommands_Executed"></CommandBinding>
     </Window.CommandBindings>
@@ -49,7 +49,7 @@
             </TreeView.ItemTemplate>
         </TreeView>
         <Button x:Name="button" Content=">" Grid.Column="2" Margin="4" Grid.Row="3" Click="button_Click" FontSize="36"/>
-        <avalonEdit:TextEditor x:Name="textEditor" FontFamily="Consolas" Margin="4" Grid.Column="1" Grid.Row="2" Grid.RowSpan="4" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" ShowLineNumbers="True" LineNumbersForeground="#FF4FA4BC" BorderBrush="#FF828790" BorderThickness="2" Drop="textEditor_Drop" FontSize="14"/>
+        <avalonEdit:TextEditor x:Name="textEditor" FontFamily="Courier New" Margin="4" Grid.Column="1" Grid.Row="2" Grid.RowSpan="4" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" ShowLineNumbers="True" LineNumbersForeground="#FF4FA4BC" BorderBrush="#FF828790" BorderThickness="2" Drop="textEditor_Drop" FontSize="14"/>
         <TextBox x:Name="textBox" Grid.Column="3" Margin="4" Grid.Row="5" TextWrapping="Wrap" BorderThickness="2" FontSize="18" IsReadOnly="True" TextOptions.TextFormattingMode="Display" BorderBrush="#FF828790" />
         <DataGrid x:Name="ErrorDataGrid" Margin="4" Grid.Column="3" Grid.Row="1" Grid.RowSpan="4" AutoGenerateColumns="False" Visibility="Hidden" BorderThickness="2"  CanUserAddRows="False" VerticalGridLinesBrush="Transparent" HorizontalGridLinesBrush="#FF688CAF" SelectionChanged="ErrorDataGrid_SelectionChanged" GotFocus="ErrorDataGrid_GotFocus" LostFocus="ErrorDataGrid_LostFocus" FontSize="14" >
             <DataGrid.Columns>

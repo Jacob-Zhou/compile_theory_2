@@ -119,6 +119,32 @@ namespace compile_theory_2.ViewModel
 			}
 		}
 
+		public static FontFamily Font
+		{
+			get
+			{
+				return textEditor.FontFamily;
+			}
+
+			set
+			{
+				textEditor.FontFamily = value;
+			}
+		}
+
+		public static double FontSize
+		{
+			get
+			{
+				return textEditor.FontSize;
+			}
+
+			set
+			{
+				textEditor.FontSize = value;
+			}
+		}
+
 		public static void Init(TextEditor tEditor)
 		{
 			textEditor = tEditor;

@@ -37,6 +37,15 @@ namespace compile_theory_2
 			CommandBinding binding = new CommandBinding(ApplicationCommands.Open);
 			binding.Executed += Binding_Open_Executed;
 			CommandBindings.Add(binding);
+
+			binding = new CommandBinding(ApplicationCommands.Properties);
+			binding.Executed += Binding_Properties_Executed;
+			CommandBindings.Add(binding);
+		}
+
+		private void Binding_Properties_Executed(object sender, ExecutedRoutedEventArgs e)
+		{
+			(new PropertiesWindow()).ShowDialog();
 		}
 
 		private void Binding_Open_Executed(object sender, ExecutedRoutedEventArgs e)

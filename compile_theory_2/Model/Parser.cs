@@ -99,7 +99,7 @@ namespace compile_theory_2.Model
 					token = Lexer.LexNext();
 					if (token == null)
 					{
-						token = new Token(SourceViewModel.GetEndOffset(), "", TokenKind.EOF);
+						token = new Token(SourceViewModel.GetEndOffset() + 1, "", TokenKind.EOF);
 						break;
 					}
 				} while (token.kind == TokenKind.ANNO);
