@@ -17,6 +17,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace compile_theory_2
 {
@@ -67,6 +68,10 @@ namespace compile_theory_2
 			//Lexer.Test();
 			//Lexer.Highlighting();
 			Parser.parse();
+			//DispatcherTimer timer = new DispatcherTimer();
+			//timer.Interval = TimeSpan.FromSeconds(1);
+			//timer.Tick += Timer_Tick;
+			//timer.Start();
 		}
 
 		private void textEditor_Drop(object sender, DragEventArgs e)
