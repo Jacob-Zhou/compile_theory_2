@@ -1,44 +1,43 @@
-$program -> $block	<- {
+0: $program -> $block	<- {
 
-$block -> { $stmts }
+1: $block -> { $stmts }
 
-$stmts -> $stmt $stmts	<- ID IF WHILE DO BREAK {
-      |  NULL
+2: $stmts -> $stmt $stmts	<- ID IF WHILE DO BREAK {
+3:       |  NULL
 
-$stmt -> ID = $expr ;
-      |  IF ( $bool ) $stmt $stmt1
-      |  WHILE ( $bool ) $stmt
-      |  DO $stmt WHILE ( $bool )
-      |  BREAK
-      |  $block		<- {
+4: $stmt -> ID = $expr ;
+5:       |  IF ( $bool ) $stmt $stmt1
+6:       |  WHILE ( $bool ) $stmt
+7:       |  DO $stmt WHILE ( $bool )
+8:       |  BREAK
+9:       |  $block		<- {
 
-$stmt1 -> ELSE $stmt
-       |  NULL
+10: $stmt1 -> ELSE $stmt
+11:        |  NULL
 
-$bool -> $expr $bool1
+12: $bool -> $expr $bool1
 
-$bool1 -> < $bool2
-       |  > $bool2
-       |  NULL
-
-$bool2 -> $expr		<- ( ID NUM
-       |  = $expr
+13: $bool1 -> < $expr
+14:        |  > $expr
+15:        |  <= $expr
+16:        |  >= $expr
+17:        |  NULL 
  
-$expr -> $term $expr1
+18: $expr -> $term $expr1
 
-$expr1 -> + $term $expr1
-       |  - $term $expr1
-       |  NULL
+19: $expr1 -> + $term $expr1
+20:        |  - $term $expr1
+21:        |  NULL
 
-$term -> $factor $term1
+22: $term -> $factor $term1
 
-$term1 -> * $factor $term1
-       |  / $factor $term1
-       |  NULL
+23: $term1 -> * $factor $term1
+24:       |  / $factor $term1
+25:       |  NULL
 
-$factor -> ( $expr )
-        |  ID
-        |  NUM
+26: $factor -> ( $expr )
+27:        |  ID
+28:        |  NUM
 
 TokenKind: IF, WHILE, DO, BREAK, ID, NUM, {, }, (, ), <, >, =, *, /, +, -, ;
 ID: <_[_a-zA-Z0-9]*>
